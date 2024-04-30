@@ -7,8 +7,8 @@ import { html } from 'lit-html';
 import { triggerOAuthLogin } from '../actions/auth';
 import { createPartyStart, joinPartyStart as joinParty } from '../actions/party-data';
 import { changePartyId } from '../actions/view-home';
+import admins from "../admins";
 import { State } from '../state';
-import festifyLogo from '../util/festify-logo';
 import sharedStyles from '../util/shared-styles';
 
 interface HomeViewProps {
@@ -45,14 +45,15 @@ const LowerButton = (props: HomeViewProps & HomeViewDispatch) => {
         `;
     } else if (props.authorizationInProgress || !props.authStatusKnown) {
         return html`
-            <paper-button raised disabled>
+            <paper-button raised disabled class='clear'>
                 Authorizing...
             </paper-button>
         `;
     } else {
         return html`
-            <paper-button raised @click=${props.loginWithSpotify}>
-                Login to create Party
+            <paper-button class='clear' @click=${props.loginWithSpotify}>
+                <iron-icon icon='festify:verified-user'></iron-icon>
+                &nbsp;Admin-Login
             </paper-button>
         `;
     }
@@ -71,8 +72,7 @@ const HomeView = (props: HomeViewProps & HomeViewDispatch) => html`
             padding: 0 10px;
             text-align: center;
 
-            background: linear-gradient(rgba(28, 31, 36, 0.9), rgba(28, 31, 36, 0.9)),
-                url(/home-bg.jpg) no-repeat center;
+            background: linear-gradient(rgba(28, 31, 36, 0.9), rgba(28, 31, 36, 0.9));
             background-size: cover;
 
             --paper-input-container-input: {
@@ -112,11 +112,7 @@ const HomeView = (props: HomeViewProps & HomeViewDispatch) => html`
         }
     </style>
 
-    <header>
-        ${festifyLogo}
-    </header>
-
-    <p>Festify lets your guests choose which music should be played using their smartphones.</p>
+    <p>Please enter the Party Code to join and add or vote for songs.</p>
 
     <main>
         <paper-input
@@ -137,6 +133,11 @@ const HomeView = (props: HomeViewProps & HomeViewDispatch) => html`
         </paper-button>
 
         ${props.playerCompatible ? LowerButton(props) : null}
+
+        <paper-button id="middle" class="clear" @click=${() => {window.location.href = "https://github.com/kimar/jukebox-app"; }}>
+            <iron-icon icon="social:github"></iron-icon>
+            &nbsp;Sourcecode
+        </paper-button>
     </main>
 `;
 /* tslint:enable */
@@ -146,7 +147,8 @@ const mapStateToProps = (state: State): HomeViewProps => ({
     authorizationInProgress: state.user.credentials.spotify.authorizing,
     authorizedAndPremium: Boolean(
         state.user.credentials.spotify.user &&
-            state.user.credentials.spotify.user.product === 'premium',
+            state.user.credentials.spotify.user.product === 'premium' &&
+            admins.indexOf(state.user.credentials.spotify.user.email) >= 0,
     ),
     authStatusKnown: state.user.credentials.spotify.statusKnown,
     playerCompatible: state.player.isCompatible,
